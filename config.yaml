@@ -482,7 +482,7 @@ debug:
     reduce_res: True
     animate_scripts: True
     save_state: False
-    save_video: True
+    save_video: False
     fast_video: False
     auto_flash: True
     disable_wild_encounters: True
