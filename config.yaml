@@ -138,7 +138,7 @@ train:
   bptt_horizon: 16
 
   # Number of environments for training.
-  num_envs: 288
+  num_envs: 216
   # Number of workers (processes) for training.
   # Environments are divided evenly across workers.
   num_workers: 24

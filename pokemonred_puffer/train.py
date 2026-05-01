@@ -70,6 +70,35 @@ def load_from_config(config: DictConfig, debug: bool) -> DictConfig:
     defaults.merge_with(debug_config)
     return defaults
 
+class EnvCreator:
+    """Picklable callable that replaces the nested env_creator closure.
+    Windows multiprocessing (spawn) cannot pickle local/nested functions,
+    so we use a class instance instead which is fully picklable."""
+    def __init__(self, wrapper_classes, reward_class, async_wrapper, sqlite_wrapper, puffer_wrapper):
+        self.wrapper_classes = wrapper_classes
+        self.reward_class = reward_class
+        self.async_wrapper = async_wrapper
+        self.sqlite_wrapper = sqlite_wrapper
+        self.puffer_wrapper = puffer_wrapper
+
+    def __call__(
+        self,
+        env_config,
+        wrappers_config,
+        reward_config,
+        async_config=None,
+        sqlite_config=None,
+    ):
+        env = self.reward_class(env_config, reward_config)
+        for cfg, (_, wrapper_class) in zip(wrappers_config, self.wrapper_classes):
+            env = wrapper_class(env, OmegaConf.create([x for x in cfg.values()][0]))
+        if self.async_wrapper and async_config:
+            env = AsyncWrapper(env, async_config["send_queues"], async_config["recv_queues"])
+        if self.sqlite_wrapper and sqlite_config:
+            env = SqliteStateResetWrapper(env, sqlite_config["database"])
+        if self.puffer_wrapper:
+            env = pufferlib.emulation.GymnasiumPufferEnv(env=env)
+        return env
 
 def make_env_creator(
     wrapper_classes: list[tuple[str, ModuleType]],
@@ -78,7 +107,8 @@ def make_env_creator(
     sqlite_wrapper: bool = False,
     puffer_wrapper: bool = True,
 ) -> Callable[[DictConfig, DictConfig], pufferlib.emulation.GymnasiumPufferEnv | gymnasium.Env]:
-    def env_creator(
+    return EnvCreator(wrapper_classes, reward_class, async_wrapper, sqlite_wrapper, puffer_wrapper)
+    """def env_creator(
         env_config: DictConfig,
         wrappers_config: list[dict[str, Any]],
         reward_config: DictConfig,
@@ -96,7 +126,8 @@ def make_env_creator(
             env = pufferlib.emulation.GymnasiumPufferEnv(env=env)
         return env
 
-    return env_creator
+    return env_creator"""
+    
 
 
 def setup_agent(
