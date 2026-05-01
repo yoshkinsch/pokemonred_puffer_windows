@@ -97,7 +97,7 @@ train:
   # Device to run training on.
   device: cuda
   # If true, use torch.compile
-  compile: True
+  compile: False
   # The mode for torch compilation
   compile_mode: "reduce-overhead"
   # Mostly useless for Pokemon, enables tensor cores on NVIDIA GPUs.
@@ -171,7 +171,7 @@ train:
   async_wrapper: False
   # Use a shared SQLite DB to reset the agents
   # when required new events and items are observed.
-  sqlite_wrapper: True
+  sqlite_wrapper: False
   # Save PyBoy states when new required events and items are observed.
   archive_states: True
   # When a new required events and items are observed, move
@@ -181,11 +181,11 @@ train:
   # event name: minutes. If we dont satisfy each condition
   # we early stop
   # The defaults have a margin of error
-  early_stop:
-    EVENT_BEAT_BROCK: 30
-    EVENT_BEAT_MISTY: 300
-    EVENT_GOT_HM01: 600
-    EVENT_BEAT_LT_SURGE: 1200
+  early_stop: ~
+   # EVENT_BEAT_BROCK: 30
+   # EVENT_BEAT_MISTY: 300
+   # EVENT_GOT_HM01: 600
+   # EVENT_BEAT_LT_SURGE: 1200
   # If set, train until all events are accomplished.
   one_epoch:
     - "EVENT_BEAT_CHAMPION_RIVAL"
