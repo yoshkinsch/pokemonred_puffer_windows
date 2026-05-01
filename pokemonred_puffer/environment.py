@@ -1805,30 +1805,25 @@ class RedGymEnv(Env):
         if self.pyboy.memory[wNumBagItems] == MAX_ITEM_CAPACITY:
             _, wBagItems = self.pyboy.symbol_lookup("wBagItems")
             bag_items = self.pyboy.memory[wBagItems : wBagItems + MAX_ITEM_CAPACITY * 2]
-            # Fun fact: The way they test if an item is an hm in code is by testing the item id
-            # is greater than or equal to 0xC4 (the item id for HM_01)
 
-            # TODO either remove or check if guard has been given drink
-            # guard given drink are 4 script pointers to check, NOT an event
-            new_bag_items = [
-                (item, quantity)
-                for item, quantity in zip(bag_items[::2], bag_items[1::2])
-                if Items(item) in KEY_ITEMS | REQUIRED_ITEMS | HM_ITEMS
-            ]
+            new_bag_items = []
+            for item, quantity in zip(bag_items[::2], bag_items[1::2]):
+                if item in Items._value2member_map_:
+                    it = Items(item)
+                    if it in KEY_ITEMS | REQUIRED_ITEMS | HM_ITEMS:
+                        new_bag_items.append((item, quantity))
+
             # Write the new count back to memory
             self.pyboy.memory[wNumBagItems] = len(new_bag_items)
-            # 0 pad
-            new_bag_items += [(255, 255)] * (20 - len(new_bag_items))
-            # now flatten list
+            # Pad with 0xFF to indicate empty slots
+            new_bag_items += [(0xFF, 0xFF)] * (MAX_ITEM_CAPACITY - len(new_bag_items))
+            # flatten list
             new_bag_items = list(sum(new_bag_items, ()))
-            # now write back to list
+            # write back to memory
             self.pyboy.memory[wBagItems : wBagItems + len(new_bag_items)] = new_bag_items
 
             _, wBagSavedMenuItem = self.pyboy.symbol_lookup("wBagSavedMenuItem")
             _, wListScrollOffset = self.pyboy.symbol_lookup("wListScrollOffset")
-            # TODO: Make this point to the location of the last removed item
-            # Should be something like the current location - the number of items
-            # that have been removed - 1
             self.pyboy.memory[wBagSavedMenuItem] = 0
             self.pyboy.memory[wListScrollOffset] = 0
 
@@ -1888,9 +1883,15 @@ class RedGymEnv(Env):
             return -1
 
     def get_items_in_bag(self) -> Iterable[Items]:
-        num_bag_items = self.read_m("wNumBagItems")
+        num_bag_items = max(0, min(self.read_m("wNumBagItems"), MAX_ITEM_CAPACITY))
         _, addr = self.pyboy.symbol_lookup("wBagItems")
-        return [Items(i) for i in self.pyboy.memory[addr : addr + 2 * num_bag_items][::2]]
+        raw = self.pyboy.memory[addr : addr + 2 * MAX_ITEM_CAPACITY]
+        item_vals = raw[: 2 * num_bag_items : 2]
+        items = []
+        for v in item_vals:
+            if v in Items._value2member_map_:
+                items.append(Items(v))
+        return items
 
     def get_hm_count(self) -> int:
         return len(HM_ITEMS.intersection(self.get_items_in_bag()))
@@ -1923,10 +1924,17 @@ class RedGymEnv(Env):
         )
 
     def get_required_items(self) -> set[str]:
-        wNumBagItems = self.read_m("wNumBagItems")
+        num_bag_items = max(0, min(self.read_m("wNumBagItems"), MAX_ITEM_CAPACITY))
         _, wBagItems = self.pyboy.symbol_lookup("wBagItems")
-        bag_items = self.pyboy.memory[wBagItems : wBagItems + wNumBagItems * 2 : 2]
-        return {Items(item).name for item in bag_items if Items(item) in REQUIRED_ITEMS}
+        raw = self.pyboy.memory[wBagItems : wBagItems + 2 * MAX_ITEM_CAPACITY]
+        item_vals = raw[: 2 * num_bag_items : 2]
+        req = set()
+        for v in item_vals:
+            if v in Items._value2member_map_:
+                it = Items(v)
+                if it in REQUIRED_ITEMS:
+                    req.add(it.name)
+        return req
 
     def get_events_sum(self):
         # adds up all event flags, exclude museum ticket
@@ -1967,9 +1975,16 @@ class RedGymEnv(Env):
         _, wNumBagItems = self.pyboy.symbol_lookup("wNumBagItems")
         numBagItems = self.read_m(wNumBagItems)
         bag = np.array(self.pyboy.memory[wBagItems : wBagItems + 40], dtype=np.uint8)
-        if numBagItems >= 20:
+        if numBagItems >= MAX_ITEM_CAPACITY:
+            items_display = []
+            for item in bag[::2]:
+                iv = int(item)
+                if iv in Items._value2member_map_:
+                    items_display.append(Items(iv).name)
+                else:
+                    items_display.append(hex(iv))
             print(
-                f"WARNING: env id {int(self.env_id)} contains a full bag with items: {[Items(item) for item in bag[::2]]}"
+                f"WARNING: env id {int(self.env_id)} contains a full bag with items: {items_display}"
             )
 
     def close(self):

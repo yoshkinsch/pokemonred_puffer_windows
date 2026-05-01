@@ -19,8 +19,8 @@ class Bag(Union):
     _fields = [("bag", BAG_CAPACITY * BagItem), ("asbytes", c_uint8 * BAG_LENGTH_BYTES)]
 
     def __init__(self, emu: PyBoy):
-        _, self.wBagItems = self.pyboy.symbol_lookup("wBagItems")
-        _, self.wNumBagItems = self.pyboy.symbol_lookup("wNumBagItems")
+        _, self.wBagItems = emu.symbol_lookup("wBagItems")
+        _, self.wNumBagItems = emu.symbol_lookup("wNumBagItems")
         self.numBagItems = emu.memory[self.wNumBagItems]
         self.as_bytes = (c_uint8 * BAG_LENGTH_BYTES)(
             *emu.memory[self.wBagItems : self.wBagItems + BAG_LENGTH_BYTES]
