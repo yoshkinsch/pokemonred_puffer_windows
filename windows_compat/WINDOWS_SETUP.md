@@ -45,7 +45,7 @@ Some dependencies (numba, Cython extensions) require a C compiler on Windows.
 
 ---
 
-## Step 3 — Clone the Repository
+## Step 3 — Clone the Repository (should already be done)
 
 Open **PowerShell** or the **VS Code integrated terminal**:
 
@@ -155,7 +155,7 @@ pip install -e . --no-build-isolation
 
 ## Step 7 — Add Your ROM
 
-Place your legally obtained **Pokémon Red** ROM in the repo root directory. Rename it to:
+Place your legally () obtained **Pokémon Red** ROM in the repo root directory. Rename it to:
 
 ```
 red.gb
@@ -251,6 +251,31 @@ debug:
 ---
 
 ## Known Windows-Specific Issues & Fixes
+
+### ❌ `sqlite3.OperationalError: unable to open database file`
+
+**Cause:** The `NamedTemporaryFile` used for the SQLite swarm database holds an exclusive
+file lock on Windows, preventing `sqlite3.connect()` from opening the same file.  
+**Fix:** Disable the sqlite swarm wrapper in `config.yaml`:
+```yaml
+sqlite_wrapper: false
+```
+This disables the swarm mechanic (agents sharing best discovered save states) but does
+not affect core PPO training or reward shaping.
+
+---
+
+### ❌ Training stops after ~400 wandb steps (~2 hours)
+
+**Cause:** The `one_epoch` setting in `config.yaml` limits training to one full pass
+through all environments before stopping, regardless of `total_timesteps`.  
+**Fix:** Comment out the `one_epoch` block in `config.yaml`:
+```yaml
+# one_epoch:
+#   - "EVENT_BEAT_CHAMPION_RIVAL"
+```
+With `one_epoch` disabled, training runs until `total_timesteps` is reached or you
+stop it manually with **Ctrl+C**.
 
 ### ❌ `RuntimeError: An attempt has been made to start a new process before bootstrapping`
 

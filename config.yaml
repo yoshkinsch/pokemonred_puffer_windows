@@ -1,7 +1,7 @@
 wandb:
-  entity: thatguy11325
-  project: pokemon
-  group: ~
+  entity: carsonk-kansas-state-university
+  project: pokemonred-puffer
+  group: baseline
 
 env:
   # If true, run without rendering every step.
@@ -154,7 +154,7 @@ train:
   # Directory to store checkpoints in.
   data_dir: runs
   # If true, save checkpoints.
-  save_checkpoint: False
+  save_checkpoint: True
   # How often to save checkpoints.
   checkpoint_interval: 200
 

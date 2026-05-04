@@ -1,3 +1,40 @@
+### Carson Kinsch — Windows Fork
+
+This is a Windows-compatible fork of [drubinstein/pokemonred_puffer](https://github.com/drubinstein/pokemonred_puffer).
+
+For Windows setup instructions, see `windows_compat/WINDOWS_SETUP.md`.
+*Also, any errors will/can be avoided by following the windows setup guide.*
+
+## Trained Models
+
+Pre-trained weights are hosted on Google Drive:  
+[Download Models](https://drive.google.com/drive/folders/1nQ-ZXNj_EEGe9FT9pXiBct08trEwWaBj?usp=sharing)
+
+The archive contains two run folders:
+- `base-trained-model/` — Baseline reward system (ObjectRewardRequiredEventsMapIdsFieldMoves)
+- `proposal-trained-model/` — Proposed reward system (ProposedObjectRewardRequiredEventsMapIdsFieldMoves)
+
+Place both folders inside the `runs/` directory.
+
+**To run the baseline:**
+```powershell
+python -m pokemonred_puffer.train train --track
+```
+
+**To run the proposed model:**
+```powershell
+python -m pokemonred_puffer.train train --track -r proposed.ProposedObjectRewardRequiredEventsMapIdsFieldMoves
+```
+
+**To evaluate a trained model:**
+```powershell
+python -m pokemonred_puffer.train evaluate
+```
+
+### (Included below is the original repo's README.md section)
+
+
+
 # Pokemon Red (RL Edition)
 
 ![Tests](https://github.com/thatguy11325/pokemonred_puffer/actions/workflows/workflow.yml/badge.svg)
