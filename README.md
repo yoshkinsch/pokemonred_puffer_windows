@@ -5,7 +5,9 @@ This is a Windows-compatible fork of [drubinstein/pokemonred_puffer](https://git
 For Windows setup instructions, see `windows_compat/WINDOWS_SETUP.md`.
 *Also, any errors will/can be avoided by following the windows setup guide.*
 
-To skip the "Windows Setup" instead, just run the script under Windwos_Setup_Script.md
+To skip the "Windows Setup" instead, just run the script in the repository called 'setup_and_train.pst' 
+
+In Command Prompt: .\setup_and_train.ps1
 
 ## Trained Models
 
