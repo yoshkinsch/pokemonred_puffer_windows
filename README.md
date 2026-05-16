@@ -9,6 +9,8 @@ To skip the "Windows Setup" instead, just run the script in the repository calle
 
 In Command Prompt: .\setup_and_train.ps1
 
+For any documentation (including Final Report, slides. etc.) please see Documentation/ folder for more.
+
 ## Trained Models
 
 Pre-trained weights are hosted on Google Drive:  
